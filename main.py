@@ -222,33 +222,61 @@ def max_flow(grafo, fuente, sumidero):
     y la seguna lista contiene las realizadas por el equipo 2. Devuelve como tercer valor el costo total    
 """
 def procesar_grafo_residual(grafo_residual, fuente, sumidero):
-    lista_equipo_1 = []
-    lista_equipo_2 = []
-    costo = 0
+    lista_equipo_1_primer_corte = []
+    lista_equipo_2_primer_corte = []
+    costo_primer_corte = 0
+    
+    lista_equipo_1_segundo_corte = []
+    lista_equipo_2_segundo_corte = []
+    costo_segundo_corte = 0
+    
     tareas = grafo_residual.obtener_vertices()
     tareas.remove(fuente)
     tareas.remove(sumidero)
     for tarea in tareas:
         if grafo_residual.obtener_peso(fuente, tarea) == 0:
-            lista_equipo_1.append(tarea)
+            lista_equipo_1_primer_corte.append(tarea)
             # Se le agrega el peso de la arista opuesta
-            costo += grafo_residual.obtener_peso(tarea, fuente)
+            costo_primer_corte += grafo_residual.obtener_peso(tarea, fuente)
         else:
-            lista_equipo_2.append(tarea)
-            costo += grafo_residual.obtener_peso(sumidero, tarea)
+            lista_equipo_2_primer_corte.append(tarea)
+            costo_primer_corte += grafo_residual.obtener_peso(sumidero, tarea)
+        
+        
+        if grafo_residual.obtener_peso(tarea, sumidero) == 0:
+            lista_equipo_2_segundo_corte.append(tarea)
+            costo_segundo_corte += grafo_residual.obtener_peso(sumidero, tarea)
+        else:
+            lista_equipo_1_segundo_corte.append(tarea)
+            costo_segundo_corte += grafo_residual.obtener_peso(tarea, fuente)
     
-    for tarea in lista_equipo_1:
+    for tarea in lista_equipo_1_primer_corte:
         
         adyacentes_tarea = grafo_residual.obtener_adyacentes(tarea)
         adyacentes_tarea.remove(fuente)
         adyacentes_tarea.remove(sumidero)
         for correlativa in adyacentes_tarea:
-            if (correlativa in lista_equipo_2):
+            if (correlativa in lista_equipo_2_primer_corte):
                 # Una de las dos aristas valdrá cero
-                costo += int(grafo_residual.obtener_peso(tarea, correlativa)/2)
-                costo += int(grafo_residual.obtener_peso(correlativa, tarea)/2)
+                costo_primer_corte += int(grafo_residual.obtener_peso(tarea, correlativa)/2)
+                costo_primer_corte += int(grafo_residual.obtener_peso(correlativa, tarea)/2)
     
-    return lista_equipo_1, lista_equipo_2, costo
+    for tarea in lista_equipo_1_segundo_corte:
+        
+        adyacentes_tarea = grafo_residual.obtener_adyacentes(tarea)
+        adyacentes_tarea.remove(fuente)
+        adyacentes_tarea.remove(sumidero)
+        for correlativa in adyacentes_tarea:
+            if (correlativa in lista_equipo_2_segundo_corte):
+                # Una de las dos aristas valdrá cero
+                costo_segundo_corte += int(grafo_residual.obtener_peso(tarea, correlativa)/2)
+                costo_segundo_corte += int(grafo_residual.obtener_peso(correlativa, tarea)/2)
+    
+    
+    if (costo_primer_corte < costo_segundo_corte):
+        return lista_equipo_1_primer_corte, lista_equipo_2_primer_corte, costo_primer_corte
+        
+    return lista_equipo_1_segundo_corte, lista_equipo_2_segundo_corte, costo_segundo_corte
     
      
     
